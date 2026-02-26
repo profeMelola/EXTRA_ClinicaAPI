@@ -1,5 +1,7 @@
 package es.daw.clinicaapi.dto.response.invoice;
 
+import es.daw.clinicaapi.enums.PaymentMethod;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +14,8 @@ public record InvoiceResponse(
     BigDecimal taxTotal,
     BigDecimal total,
     LocalDateTime issuedAt,
+    LocalDateTime paidAt,
+    String paymentMethod,
     List<InvoiceLineResponse> lines
 ) {}
 

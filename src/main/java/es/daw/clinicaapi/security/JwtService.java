@@ -77,7 +77,7 @@ public class JwtService {
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 //.expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hora
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * Integer.parseInt(expiration)))
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * Integer.parseInt(expiration.trim())))
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
     }

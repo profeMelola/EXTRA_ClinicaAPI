@@ -20,6 +20,8 @@ public final class InvoiceMapper {
             inv.getTaxTotal(),
             inv.getTotal(),
             inv.getIssuedAt(),
+            inv.getPaidAt(),
+            inv.getPaymentMethod() != null ? inv.getPaymentMethod().name() : "PENDIENTE DE PAGO TORPEDO",
             inv.getLines().stream()
                 .map(InvoiceMapper::toLineResponse)
                 .collect(Collectors.toList())

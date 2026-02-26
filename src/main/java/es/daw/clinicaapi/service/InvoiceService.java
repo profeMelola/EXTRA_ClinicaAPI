@@ -2,6 +2,7 @@ package es.daw.clinicaapi.service;
 
 import es.daw.clinicaapi.dto.request.invoice.InvoiceIssueRequest;
 import es.daw.clinicaapi.dto.request.invoice.InvoiceLineCreateRequest;
+import es.daw.clinicaapi.dto.request.invoice.InvoicePayRequest;
 import es.daw.clinicaapi.dto.response.invoice.InvoiceResponse;
 import es.daw.clinicaapi.entity.Appointment;
 import es.daw.clinicaapi.entity.Invoice;
@@ -164,5 +165,49 @@ public class InvoiceService {
             }
         }
     }
+
+    // método encargado de facturar...
+    /*
+    La factura debe existir:
+        Si no existe: 404 NOT FOUND.
+    Solo se puede pagar si está en estado PENDING:
+        Si está en cualquier otro estado (PAID, CANCELLED, etc.): 409 CONFLICT.
+        "Invoice cannot be paid from status: X"
+    Al pagar:
+        status = PAID
+        paidAt = now()
+        paymentMethod = req.paymentMethod()
+
+    La operación debe ser transaccional (@Transactional).
+     */
+    @Transactional
+    public InvoiceResponse payInvoice(Long invoiceId, InvoicePayRequest request){
+
+        // La factura debe existir
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new NotFoundException("Invoice not found with id: "+invoiceId));
+
+        // Solo se puede pagar si está en estado PENDING
+        if (invoice.getStatus() != InvoiceStatus.PENDING) {
+            throw new ConflictException("Invoice cannot be paid from status: "+invoice.getStatus());
+        }
+
+        invoice.setStatus(InvoiceStatus.PAID);
+        invoice.setPaidAt(LocalDateTime.now());
+        invoice.setPaymentMethod(request.paymentMethod());
+
+        // recibo un entity con la fila actualizada
+        Invoice invoiceUpdated = invoiceRepository.save(invoice);
+
+        // convierto el entity a un dto
+        InvoiceResponse invoiceResponse = InvoiceMapper.toResponse(invoiceUpdated);
+
+        //return InvoiceMapper.toResponse(invoiceUpdated);
+        return invoiceResponse;
+
+    }
+
+
+
 
 }
