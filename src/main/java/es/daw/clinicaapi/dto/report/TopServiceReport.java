@@ -1,5 +1,12 @@
 package es.daw.clinicaapi.dto.report;
 
-public record TopServiceReport(
 
+import java.math.BigDecimal;
+
+public record TopServiceReport(
+    Long serviceId,
+    String serviceName,
+    long linesCount,
+    long unitsSold,
+    BigDecimal totalBilled
 ) {}

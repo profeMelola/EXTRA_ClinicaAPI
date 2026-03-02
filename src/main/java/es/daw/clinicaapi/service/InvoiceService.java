@@ -186,13 +186,15 @@ public class InvoiceService {
         invoice.setPaymentMethod(request.paymentMethod());
 
         // recibo un entity con la fila actualizada
+        // No hace falta hacer save pero necesito el entity actualizado para el dto del response...
         Invoice invoiceUpdated = invoiceRepository.save(invoice);
 
         // convierto el entity a un dto
         InvoiceResponse invoiceResponse = InvoiceMapper.toResponse(invoiceUpdated);
+        //InvoiceResponse invoiceResponse = InvoiceMapper.toResponse(invoice);
 
-        //return InvoiceMapper.toResponse(invoiceUpdated);
-        return invoiceResponse;
+        return InvoiceMapper.toResponse(invoiceUpdated);
+        //return invoiceResponse;
 
     }
 

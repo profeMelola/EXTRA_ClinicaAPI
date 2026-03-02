@@ -57,6 +57,17 @@ public class Invoice {
         line.setInvoice(null);
     }
 
+    // Se ejecuta cuando la entidad es modificada y sincronizada con la BD.
+//    @PreUpdate
+//    private void preUpdate() {
+//
+//        // Si la factura pasa a PAID y aún no tiene fecha de pago
+//        if (this.status == InvoiceStatus.PAID && this.paidAt == null) {
+//            this.paidAt = LocalDateTime.now();
+//        }
+//
+//    }
+
 
 }
 
