@@ -2,8 +2,13 @@ package es.daw.clinicaapi.controller;
 
 import es.daw.clinicaapi.dto.report.TopServiceReport;
 import es.daw.clinicaapi.enums.InvoiceStatus;
+import es.daw.clinicaapi.exception.BadRequestException;
 import es.daw.clinicaapi.service.ReportService;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -60,27 +65,66 @@ public class ReportController {
 
     }
 
-//
-//    // ENDPOINT PÚBLICO!!!!
-//    @GetMapping("/top-services2")
-//    // Otra solución para valor de status incorrecto... no se ajusta a nuestra forma de trabajar en clase
-//    public ResponseEntity<List<TopServiceReport>> topServices2(
-//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
-//            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
-//            @RequestParam(required = false) String status,
-//            @PageableDefault(page=0, size = 3) Pageable pageable
-//    ) {
-//
-//        if (status != null && !status.isBlank()) {
-//            try {
-//                es.daw.clinicaapi.enums.InvoiceStatus status = InvoiceStatus.valueOf(status.trim().toUpperCase());
-//            } catch (IllegalArgumentException e) {
-//                return ResponseEntity
-//                        .badRequest()
-//                        .body("Valor inválido para 'status': " + status);
-//            }
-//        }
-//    }
+    @GetMapping("/top-services-page")
+    @PreAuthorize("hasRole('BILLING')")
+    public ResponseEntity<Page<TopServiceReport>> topServicesPage(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(required = false) InvoiceStatus status,
+            @PageableDefault(page = 0, size = 3) Pageable pageable
+    ) {
+        Page<TopServiceReport> result =
+                reportService.getTopServicesPage(from, to, status, pageable);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // ------------------------------------------
+
+    // ENDPOINT PÚBLICO!!!!
+    @GetMapping("/top-services-status-string")
+    // Otra solución para valor de status incorrecto... no se ajusta a nuestra forma de trabajar en clase
+    public ResponseEntity<List<TopServiceReport>> topServices2(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(required = false) String status,
+            @PageableDefault(page=0, size = 3) Pageable pageable
+    ) {
+        // Si no se proporciona status -> consultar sin filtro de estado
+        if (status == null || status.isBlank()) {
+            List<TopServiceReport> result = reportService.getTopServices(from, to, null, pageable);
+            return ResponseEntity.ok(result);
+        }
+
+        // Si se proporciona, intentar convertir a InvoiceStatus y manejar error
+        try {
+            InvoiceStatus statusEnum = InvoiceStatus.valueOf(status.trim().toUpperCase());
+            List<TopServiceReport> result = reportService.getTopServices(from, to, statusEnum, pageable);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+
+    }
+
+
+    // ---------- Montando Pageable manualmente para validar los parámetros de paginación ----------
+    // NOOOOOOOOOOOOOOOOOOO PARA EL EXAMEN
+    @GetMapping("/top-services-pageable-manual")
+    @PreAuthorize("hasRole('BILLING')")
+    public ResponseEntity<List<TopServiceReport>> topServices3(
+            @RequestParam LocalDateTime from,
+            @RequestParam LocalDateTime to,
+            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(name = "size", defaultValue = "3") @Min(1) @Max(5) int size
+    ) {
+        // Montamos a mano Pageable
+        Pageable pageable = PageRequest.of(page, size);
+        List<TopServiceReport> result = reportService.getTopServices(from, to, status, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+
+
 }
-
-

@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**","/h2-console/**").permitAll()
                         //.anyRequest().permitAll() // para acceso público
                         // PENDIENTE!!! REGLA DE ACCESO AL ENDPOINT POST /api/appointments
-                        .requestMatchers(HttpMethod.GET,"/api/reports/top-services2").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/reports/top-services-status-string").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider)

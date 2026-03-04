@@ -8,6 +8,7 @@ import es.daw.clinicaapi.repository.InvoiceLineRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cglib.core.Local;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,15 @@ public class ReportService {
 
     private final InvoiceLineRepository invoiceLineRepository;
 
+
+    /**
+     * Con List. Perdemos metadatos de paginación
+     * @param from
+     * @param to
+     * @param status
+     * @param pageable
+     * @return
+     */
     public List<TopServiceReport> getTopServices(LocalDateTime from,
                                                  LocalDateTime to,
                                                  InvoiceStatus status,
@@ -41,6 +51,33 @@ public class ReportService {
 
         // 2. LLAMADA AL REPOSITORIO
         return invoiceLineRepository.topServicesByIssuedAt(from, to, status, pageable);
+
+    }
+
+    /**
+     * Con Page
+     * @param from
+     * @param to
+     * @param status
+     * @param pageable
+     * @return
+     */
+    public Page<TopServiceReport> getTopServicesPage(LocalDateTime from,
+                                                     LocalDateTime to,
+                                                     InvoiceStatus status,
+                                                     Pageable pageable) {
+
+        // 1. VALIDACIONES Y REGLAS DE NEGOCIO
+        // Mejora: el rango que se pueda configurar en daw.properties
+        if (from.isBefore(LocalDateTime.now()) && to.isAfter(LocalDateTime.now())) {
+            if (pageable.getPageSize() < minSize || pageable.getPageSize() > maxSize)
+                throw new BadRequestException("El tamaño de página debe estar entre "+minSize+" y "+maxSize);
+        }
+        else
+            throw new BadRequestException("mal las fechas el to debe posterior al from !!!!!");
+
+        // 2. LLAMADA AL REPOSITORIO
+        return invoiceLineRepository.topServicesByIssuedAtWithPage(from, to, status, pageable);
 
     }
 
