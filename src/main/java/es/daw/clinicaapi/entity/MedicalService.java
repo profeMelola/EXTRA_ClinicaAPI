@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "medical_services")
@@ -24,5 +26,8 @@ public class MedicalService {
 
     @Column(nullable=false)
     private boolean active = true;
-}
 
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
+    private List<InvoiceLine> lines = new ArrayList<>();
+
+}
